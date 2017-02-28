@@ -32,26 +32,30 @@ class RNGoogleFit {
      * @callback callback The function will be called with an array of elements.
      */
 
-    getDailyStepCountSamples(options, callback) {
+    getDailyStepCountSamples(options, callback, errorCallback) {
         let startDate = Date.parse(options.startDate);
         let endDate = Date.parse(options.endDate);
-        googleFit.getDailyStepCountSamples( startDate,
+        googleFit.getDailyStepCountSamples(
+            startDate,
             endDate,
             (msg) => {
-                callback(msg, false);
+                if(errorCallback) {
+                    errorCallback(msg);
+                }
             },
             (res) => {
-                if (res.length>0) {
+                if (res.length > 0) {
                     res = res.map((el) => {
-                        if (el.value) {
+                        if (el.steps) {
                             el.startDate = new Date(el.startDate).toISOString();
                             el.endDate = new Date(el.endDate).toISOString();
+                            el.value = el.steps;
                             return el;
                         }
                     });
-                    callback(false, res.filter(day => day != undefined));
+                    callback(res.filter(day => day != undefined));
                 } else {
-                    callback("There is no any steps data for this period", false);
+                    callback([]);
                 }
             });
     }
